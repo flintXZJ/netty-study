@@ -1,5 +1,6 @@
 package com.xzj.stu.netty.server;
 
+import com.xzj.stu.netty.common.base.BaseInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
@@ -24,18 +25,18 @@ public class NettyServer implements IServer {
      * worker表示处理每一条连接的数据读写的线程组
      */
     private NioEventLoopGroup workerGroup;
+
+    private BaseInitializer baseInitializer;
     /**
      * 服务绑定端口
      */
-    private int port = 8080;
+    private int port;
 
-    private ChannelFuture startStatus;
+    private ChannelFuture startFuture;
 
-    public NettyServer() {
-    }
-
-    public NettyServer(int port) {
+    public NettyServer(int port, BaseInitializer baseInitializer) {
         this.port = port;
+        this.baseInitializer = baseInitializer;
     }
 
     public void start() throws Exception {
@@ -51,12 +52,12 @@ public class NettyServer implements IServer {
                 //指定IO模型为NIO
                 .channel(NioServerSocketChannel.class)
                 //主要就是定义后续每条连接的数据读写，业务处理逻辑
-                .childHandler(new MyChannelInitializer())
+                .childHandler(this.baseInitializer)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
-        this.startStatus = this.serverBootstrap.bind(this.port).addListener(new PortBindFutureListener()).sync();
+        this.startFuture = this.serverBootstrap.bind(this.port).addListener(new PortBindFutureListener()).sync();
 
-        if (!this.startStatus.isSuccess()) {
+        if (!this.startFuture.isSuccess()) {
             logger.info("netty server start failed.");
         } else {
             logger.info("netty server start success.");
@@ -64,7 +65,7 @@ public class NettyServer implements IServer {
     }
 
     public void stop() throws Exception {
-        if (this.startStatus != null && this.startStatus.isSuccess()) {
+        if (this.startFuture != null && this.startFuture.isSuccess()) {
             logger.info("stop netty server...");
             boolean workerShutdown = false;
             if (workerGroup != null || !workerGroup.isShuttingDown() || !workerGroup.isShutdown()) {
@@ -77,7 +78,7 @@ public class NettyServer implements IServer {
             }
 
             if (workerShutdown && boosShutdown) {
-                this.startStatus = null;
+                this.startFuture = null;
                 logger.info("netty server stoped.");
             }
         } else {
@@ -91,9 +92,9 @@ public class NettyServer implements IServer {
     }
 
     public Boolean isStarted() {
-        if (this.startStatus == null) {
+        if (this.startFuture == null) {
             return false;
         }
-        return this.startStatus.isSuccess();
+        return this.startFuture.isSuccess();
     }
 }
