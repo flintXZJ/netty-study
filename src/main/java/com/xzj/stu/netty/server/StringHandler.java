@@ -1,6 +1,7 @@
 package com.xzj.stu.netty.server;
 
 import com.xzj.stu.netty.common.base.BaseHandler;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 
 import java.util.Date;
@@ -11,6 +12,7 @@ import java.util.Date;
  * @author zhijunxie
  * @date 2019/7/3 14:11
  */
+@ChannelHandler.Sharable
 public class StringHandler extends BaseHandler<String> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
