@@ -49,12 +49,13 @@ public class NettyServer implements IServer {
         this.serverBootstrap
                 //配置线程模型
                 .group(this.boosGroup, this.workerGroup)
-                //指定IO模型为NIO
+                //指定IO模型为NIO  该类中指定该通道处理的事务是SelectionKey.OP_ACCEPT连接事件
                 .channel(NioServerSocketChannel.class)
                 //主要就是定义后续每条连接的数据读写，业务处理逻辑
                 .childHandler(this.baseInitializer)
                 .childOption(ChannelOption.SO_KEEPALIVE, true);
 
+        //s.bind()中实例化NioServerSocketChannel，初始化，并将其注册到group的boosGroup线程池NIOEventLoopGroup中
         this.startFuture = this.serverBootstrap.bind(this.port).addListener(new PortBindFutureListener()).sync();
 
         if (!this.startFuture.isSuccess()) {
