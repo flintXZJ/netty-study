@@ -43,8 +43,8 @@ public class NettyServer implements IServer {
         logger.info("netty server starting...");
 
         serverBootstrap = new ServerBootstrap();
-        boosGroup = new NioEventLoopGroup();
-        workerGroup = new NioEventLoopGroup(3);
+        boosGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
 
         this.serverBootstrap
                 //配置线程模型
